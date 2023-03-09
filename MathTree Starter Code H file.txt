@@ -1,0 +1,36 @@
+#ifndef MATH_JUNIPER_H
+#define MATH_jUNIPER_H
+
+#include "WCS_Pointer.h"
+
+#include "Token.h"
+
+class MathJuniper
+{
+private:
+	struct Node : public RefCount
+	{
+		WCS_Pointer <Node>		pLeft;
+		WCS_Pointer <Node>		pRight;
+		WCS_Pointer <Node>		pParent;
+		Token					Toke;
+
+		Node(const Token &);
+	};
+public:
+	enum	ResultCode { OK, Error };
+	MathJuniper();
+	~MathJuniper();
+	void			Delete();
+	ResultCode		InsertBinaryOperator(const Token &);
+	ResultCode		InsertOperand(const Token &);
+	ResultCode		InsertUnaryOperator(const Token &);
+private:
+	MathJuniper(const MathJuniper &);
+	MathJuniper &	operator =	(const MathJuniper &);
+
+	WCS_Pointer <Node>		pRoot;
+	WCS_Pointer <Node>		pLastOperator;
+};
+
+#endif

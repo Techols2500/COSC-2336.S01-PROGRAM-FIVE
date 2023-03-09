@@ -1,0 +1,108 @@
+#include "MathJuniper.h"
+
+MathJuniper::Node::Node(const Token & T) : Toke(T)
+{
+}
+
+MathJuniper::MathJuniper()
+{
+}
+
+MathJuniper::~MathJuniper()
+{
+	Delete();
+}
+
+void MathJuniper::Delete()
+{
+	//	Left as an exercise for the student
+}
+/*		original way we did this in class
+MathJuniper::ResultCode MathJuniper::InsertBinaryOperator (const Token & T)
+{
+WCS_Pointer <Node>	pNewOperator	(new Node (T));
+
+if (!pLastOperator)
+{
+(*pRoot).pParent		= pNewOperator;
+(*pNewOperator).pLeft	= pRoot;
+pRoot					= pNewOperator;
+}
+else
+{
+if ((*pLastOperator).Toke.GetPrecedence () < (*pNewOperator).Toke.GetPrecedence ())
+{
+(*pNewOperator).pLeft				= (*pLastOperator).pRight;
+(*(*pNewOperator).pLeft).pParent	= pNewOperator;
+(*pLastOperator).pRight				= pNewOperator;
+(*pNewOperator).pParent				= pLastOperator;
+}
+else
+{	// need to go back up the tree to see where to add the new operator
+while (pLastOperator.Exists () && ((*pLastOperator).Toke.GetPrecedence () >= (*pNewOperator).Toke.GetPrecedence ()))
+pLastOperator = (*pLastOperator).pParent;
+if (pLastOperator.DoesNotExist ())		// we backed all the way out of the tree
+{
+(*pNewOperator).pLeft	= pRoot;
+(*pRoot).pParent		= pNewOperator;
+pRoot					= pNewOperator;
+}
+else
+{
+(*pNewOperator).pLeft				= (*pLastOperator).pRight;
+(*pNewOperator).pParent				= pLastOperator;
+(*(*pLastOperator).pRight).pParent	= pNewOperator;
+(*pLastOperator).pRight				= pNewOperator;
+}
+}
+}
+pLastOperator	= pNewOperator;
+return OK;
+}
+*/
+
+// rewritten to shorten the code
+MathJuniper::ResultCode MathJuniper::InsertBinaryOperator(const Token & T)
+{
+	WCS_Pointer <Node>	pNewOperator(new Node(T));
+
+	while (pLastOperator && ((*pLastOperator).Toke.GetPrecedence() >= (*pNewOperator).Toke.GetPrecedence()))
+		pLastOperator = (*pLastOperator).pParent;
+	if (!pLastOperator)		// we backed all the way out of the tree
+	{
+		(*pNewOperator).pLeft = pRoot;
+		(*pRoot).pParent = pNewOperator;
+		pRoot = pNewOperator;
+	}
+	else
+	{		// we are adding a new operator into the middle of the tree
+		(*pNewOperator).pLeft = (*pLastOperator).pRight;
+		(*pNewOperator).pParent = pLastOperator;
+		(*(*pLastOperator).pRight).pParent = pNewOperator;
+		(*pLastOperator).pRight = pNewOperator;
+	}
+	pLastOperator = pNewOperator;
+	return OK;
+}
+
+MathJuniper::ResultCode MathJuniper::InsertOperand(const Token & T)
+{
+	WCS_Pointer <Node>	pTemp(new Node(T));
+
+	if (!pRoot)
+		pRoot = pTemp;
+	else
+	{
+		(*pLastOperator).pRight = pTemp;
+		(*pTemp).pParent = pLastOperator;
+	}
+	return OK;
+}
+
+MathJuniper::ResultCode MathJuniper::InsertUnaryOperator(const Token & T)
+{
+	Token Temp(Token::ConstantToken, 0);
+
+	InsertOperand(Temp);
+	return InsertBinaryOperator(T);
+}
